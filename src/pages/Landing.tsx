@@ -7,28 +7,28 @@ const Landing: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 border-b border-slate-700/50 bg-slate-950/80 backdrop-blur-sm">
+      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-red-600/20">
-              <Heart className="h-6 w-6 text-red-500" />
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-red-100">
+              <Heart className="h-6 w-6 text-red-600" />
             </div>
-            <span className="text-xl font-bold text-transparent bg-gradient-to-r from-red-400 to-red-600 bg-clip-text">
+            <span className="text-xl font-bold text-red-600">
               LifeLink
             </span>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/about')}
-              className="text-slate-400 hover:text-red-400 transition-colors font-medium"
+              className="text-gray-600 hover:text-red-600 transition-colors font-medium"
             >
               About
             </button>
             <button
               onClick={() => navigate('/contact')}
-              className="text-slate-400 hover:text-red-400 transition-colors font-medium"
+              className="text-gray-600 hover:text-red-600 transition-colors font-medium"
             >
               Contact
             </button>
@@ -47,15 +47,15 @@ const Landing: React.FC = () => {
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-600/20 mb-6 mx-auto">
-          <Heart className="h-8 w-8 text-red-500" />
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-6 mx-auto">
+          <Heart className="h-8 w-8 text-red-600" />
         </div>
         
-        <h1 className="text-5xl md:text-6xl font-bold text-transparent bg-gradient-to-r from-red-400 via-red-500 to-red-600 bg-clip-text mb-4">
+        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
           Donate Life, Save Lives
         </h1>
         
-        <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
           A secure, intelligent organ donation platform that connects donors with recipients. 
           Register as a donor, request an organ, or manage the verification process.
         </p>
@@ -78,32 +78,32 @@ const Landing: React.FC = () => {
 
         {/* Feature Cards */}
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="p-8 rounded-lg border border-red-600/30 bg-red-600/5 hover:bg-red-600/10 transition-all hover:border-red-600/50">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-600/20 mb-4">
-              <Users className="h-6 w-6 text-red-400" />
+          <div className="p-8 rounded-lg border border-gray-200 bg-gray-50 hover:shadow-lg transition-all">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mb-4">
+              <Users className="h-6 w-6 text-red-600" />
             </div>
-            <h3 className="text-lg font-semibold text-red-400 mb-2">For Donors</h3>
-            <p className="text-slate-400 text-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">For Donors</h3>
+            <p className="text-gray-600 text-sm">
               Register your willingness to donate organs and help save lives in your community.
             </p>
           </div>
 
-          <div className="p-8 rounded-lg border border-red-600/30 bg-red-600/5 hover:bg-red-600/10 transition-all hover:border-red-600/50">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-600/20 mb-4">
-              <Heart className="h-6 w-6 text-red-400" />
+          <div className="p-8 rounded-lg border border-gray-200 bg-gray-50 hover:shadow-lg transition-all">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mb-4">
+              <Heart className="h-6 w-6 text-red-600" />
             </div>
-            <h3 className="text-lg font-semibold text-red-400 mb-2">For Recipients</h3>
-            <p className="text-slate-400 text-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">For Recipients</h3>
+            <p className="text-gray-600 text-sm">
               Request organs with intelligent matching based on blood type, location, and urgency.
             </p>
           </div>
 
-          <div className="p-8 rounded-lg border border-red-600/30 bg-red-600/5 hover:bg-red-600/10 transition-all hover:border-red-600/50">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-600/20 mb-4">
-              <Shield className="h-6 w-6 text-red-400" />
+          <div className="p-8 rounded-lg border border-gray-200 bg-gray-50 hover:shadow-lg transition-all">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mb-4">
+              <Shield className="h-6 w-6 text-red-600" />
             </div>
-            <h3 className="text-lg font-semibold text-red-400 mb-2">Admins</h3>
-            <p className="text-slate-400 text-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Admins</h3>
+            <p className="text-gray-600 text-sm">
               Verify details, approve requests, and manage the entire matching process securely.
             </p>
           </div>
@@ -111,8 +111,8 @@ const Landing: React.FC = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-slate-700/50">
-        <h2 className="text-4xl font-bold text-red-400 mb-16 text-center">How It Works</h2>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-gray-200">
+        <h2 className="text-4xl font-bold text-gray-900 mb-16 text-center">How It Works</h2>
         
         <div className="grid md:grid-cols-4 gap-8">
           {[
@@ -122,11 +122,11 @@ const Landing: React.FC = () => {
             { num: '4', title: 'Get Matched', desc: 'System connects compatible users', icon: '🎯' },
           ].map((step, idx) => (
             <div key={idx}>
-              <div className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-red-600 to-red-700 text-white font-bold text-lg mb-4 mx-auto">
+              <div className="flex items-center justify-center w-14 h-14 rounded-full bg-red-600 text-white font-bold text-lg mb-4 mx-auto">
                 {step.num}
               </div>
-              <h3 className="text-lg font-semibold text-red-400 mb-2 text-center">{step.title}</h3>
-              <p className="text-slate-400 text-sm text-center">{step.desc}</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2 text-center">{step.title}</h3>
+              <p className="text-gray-600 text-sm text-center">{step.desc}</p>
             </div>
           ))}
         </div>
@@ -213,9 +213,9 @@ const Landing: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-slate-700/50 text-center">
-        <h2 className="text-4xl font-bold text-red-400 mb-4">Ready to Save Lives?</h2>
-        <p className="text-slate-400 mb-10 max-w-2xl mx-auto text-lg">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-gray-200 text-center">
+        <h2 className="text-4xl font-bold text-gray-900 mb-4">Ready to Save Lives?</h2>
+        <p className="text-gray-600 mb-10 max-w-2xl mx-auto text-lg">
           Join thousands of donors, recipients, and healthcare professionals on LifeLink. 
           Every registration brings us closer to saving lives.
         </p>
@@ -228,13 +228,13 @@ const Landing: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-700/50 bg-slate-950/80 backdrop-blur-sm py-8">
+      <footer className="border-t border-gray-200 bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-slate-500 text-sm mb-4">&copy; 2026 LifeLink Organ Donation Platform. All rights reserved.</p>
+          <p className="text-gray-600 text-sm mb-4">&copy; 2026 LifeLink Organ Donation Platform. All rights reserved.</p>
           <div className="flex justify-center gap-8 flex-wrap">
-            <button className="text-slate-400 hover:text-red-400 transition-colors text-sm font-medium">Privacy Policy</button>
-            <button className="text-slate-400 hover:text-red-400 transition-colors text-sm font-medium">Terms of Service</button>
-            <button onClick={() => navigate('/contact')} className="text-slate-400 hover:text-red-400 transition-colors text-sm font-medium">Contact Us</button>
+            <button className="text-gray-600 hover:text-red-600 transition-colors text-sm font-medium">Privacy Policy</button>
+            <button className="text-gray-600 hover:text-red-600 transition-colors text-sm font-medium">Terms of Service</button>
+            <button onClick={() => navigate('/contact')} className="text-gray-600 hover:text-red-600 transition-colors text-sm font-medium">Contact Us</button>
           </div>
         </div>
       </footer>

@@ -15,11 +15,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
     const variants = {
-      primary: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 disabled:bg-slate-700 disabled:text-slate-400 shadow-md hover:shadow-lg',
-      secondary: 'bg-slate-700 text-white hover:bg-slate-600 active:bg-slate-800 disabled:bg-slate-900 disabled:text-slate-400 shadow-md hover:shadow-lg',
-      outline: 'border-2 border-red-600 bg-transparent text-red-400 hover:bg-red-600/10 active:bg-red-600/20 disabled:border-slate-600 disabled:text-slate-400',
-      ghost: 'bg-transparent text-slate-300 hover:bg-slate-800 hover:text-red-400 active:bg-slate-700 disabled:text-slate-600',
-      danger: 'bg-red-700 text-white hover:bg-red-800 active:bg-red-900 disabled:bg-slate-700 disabled:text-slate-400 shadow-md hover:shadow-lg',
+      primary: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 disabled:bg-gray-400 disabled:text-white',
+      secondary: 'bg-gray-600 text-white hover:bg-gray-700 active:bg-gray-800 disabled:bg-gray-400 disabled:text-white',
+      outline: 'border-2 border-red-600 bg-white text-red-600 hover:bg-red-50 active:bg-red-100 disabled:border-gray-400 disabled:text-gray-400',
+      ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200 disabled:text-gray-400',
+      danger: 'bg-red-700 text-white hover:bg-red-800 active:bg-red-900 disabled:bg-gray-400 disabled:text-white',
     };
 
     const sizes = {
