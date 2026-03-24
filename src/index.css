@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+.auth-bg {
+  background-image: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
