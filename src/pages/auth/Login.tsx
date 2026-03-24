@@ -15,8 +15,11 @@ export function Login() {
   const location = useLocation();
 
   const redirectBasedOnRole = (role: string | null | undefined, profileCompleted: boolean | null | undefined) => {
+    // If no role, must go to role selection
     if (!role) return '/role-selection';
+    // If role exists but profile not completed, go to onboarding
     if (!profileCompleted) return `/onboarding/${role}`;
+    // Otherwise go to dashboard based on role
     if (role === 'donor') return '/donor/dashboard';
     if (role === 'recipient') return '/recipient/dashboard';
     if (role === 'hospital') return '/hospital/dashboard';

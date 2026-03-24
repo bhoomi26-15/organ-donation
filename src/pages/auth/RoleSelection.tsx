@@ -9,18 +9,26 @@ import { Button } from '../../components/ui/Button';
 export function RoleSelection() {
   const [role, setRole] = useState<'donor' | 'recipient' | 'hospital' | null>(null);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (profile?.role) {
+    // Only redirect if they already have a role AND are on this page
+    // This prevents auto-redirect when they haven't selected yet
+    setTimeout(() => setPageLoading(false), 500);
+    
+    if (profile?.role && profile.role !== 'donor' && profile.role !== 'recipient' && profile.role !== 'hospital') {
+      // If somehow they have an invalid/admin role, redirect to dashboard
       if (profile.role === 'admin') navigate('/admin/dashboard');
-      else navigate(`/onboarding/${profile.role}`);
     }
   }, [profile, navigate]);
 
   const handleContinue = async () => {
-    if (!role || !user) return;
+    if (!role || !user) {
+      alert('Please select a role to continue');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -38,7 +46,7 @@ export function RoleSelection() {
 
       if (error) throw error;
 
-      // Step 2: Update auth metadata
+      // Step 2: Update auth metadata to keep role in sync
       await supabase.auth.updateUser({
         data: { role }
       });
@@ -57,13 +65,23 @@ export function RoleSelection() {
       await refreshProfile();
 
       // Step 5: Navigate to onboarding
-      navigate(`/onboarding/${role}`);
+      setTimeout(() => {
+        navigate(`/onboarding/${role}`);
+      }, 100);
     } catch (err: any) {
       console.error('Error updating role:', err);
       alert('Failed to save role selection. Please try again.');
       setLoading(false);
     }
   };
+
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 rounded-full border-b-2 border-red-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 flex items-center justify-center p-4">

@@ -40,10 +40,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error) {
-        // Create profile stub if not created yet (common for OAuth first login)
+        // Create profile stub if not found (common for new signups or OAuth first login)
         if (error.code === 'PGRST116' || error.message?.includes('No row')) {
           const full_name = user?.user_metadata?.full_name || user?.email || null;
           const email = user?.email || null;
+          // Check if role exists in metadata
           const role = (user?.user_metadata as any)?.role || null;
 
           const { data: upserted, error: upsertError } = await supabase
@@ -53,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 id: userId,
                 full_name,
                 email,
-                role,
+                role, // This could be null if signup hasn't set it yet
                 profile_completed: false,
               },
               { onConflict: 'id' }

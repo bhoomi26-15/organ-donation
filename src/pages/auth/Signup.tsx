@@ -4,7 +4,6 @@ import { supabase } from '../../lib/supabase';
 import { Heart } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Select } from '../../components/ui/Select';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/Card';
 
 export function Signup() {
@@ -12,7 +11,6 @@ export function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -25,10 +23,6 @@ export function Signup() {
 
     if (!fullName) {
       setError('Please enter your name');
-      return;
-    }
-    if (!role) {
-      setError('Please select a role');
       return;
     }
     if (password !== confirmPassword) {
@@ -49,7 +43,6 @@ export function Signup() {
         options: {
           data: {
             full_name: fullName,
-            role,
           },
           emailRedirectTo: `${window.location.origin}/login`,
         }
@@ -57,7 +50,12 @@ export function Signup() {
 
       if (signUpError) throw signUpError;
 
-      setSuccess('Account created! Please check your email to confirm your account.');
+      setSuccess('Account created! Please check your email to confirm your account, then log in.');
+      setFullName('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      
       setTimeout(() => navigate('/login'), 3000);
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.');
@@ -137,17 +135,6 @@ export function Signup() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
-            />
-            <Select
-              label="I'm signing up as..."
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              required
-              options={[
-                { value: 'donor', label: 'Organ Donor' },
-                { value: 'recipient', label: 'Organ Recipient' },
-                { value: 'hospital', label: 'Hospital/Clinic' },
-              ]}
             />
             <Button className="w-full" type="submit" isLoading={loading}>
               Create Account
