@@ -75,16 +75,20 @@ export function RecipientOnboarding() {
       const existingRecipient = await recipientService.getRecipientByUserId(user.id);
 
       if (existingRecipient) {
-        await recipientService.updateRecipient(existingRecipient.id, {
+        const updateData: any = {
           ...formData,
-          recipient_status: 'pending_approval',
-        });
+          age: parseInt(formData.age),
+          status: 'pending' as const,
+        };
+        await recipientService.updateRecipient(existingRecipient.id, updateData);
       } else {
-        await recipientService.createRecipient({
+        const createData: any = {
           user_id: user.id,
           ...formData,
-          recipient_status: 'pending_approval',
-        });
+          age: parseInt(formData.age),
+          status: 'pending' as const,
+        };
+        await recipientService.createRecipient(createData);
       }
 
       // Update profile as completed
@@ -286,19 +290,6 @@ export function RecipientOnboarding() {
               )}
             </CardContent>
           </form>
-        </Card>
-      </div>
-    </div>
-  );
-                  rows={4} placeholder="Describe the current medical condition and diagnosis..."
-                ></textarea>
-              </div>
-
-              <div className="pt-4 border-t">
-                <Button className="w-full" type="submit" isLoading={loading}>Submit Request</Button>
-              </div>
-            </form>
-          </CardContent>
         </Card>
       </div>
     </div>

@@ -78,12 +78,14 @@ export function DonorOnboarding() {
       if (existingDonor) {
         await donorService.updateDonor(existingDonor.id, {
           ...formData,
+          age: parseInt(formData.age),
           donor_status: 'pending_verification',
         });
       } else {
         await donorService.createDonor({
           user_id: user.id,
           ...formData,
+          age: parseInt(formData.age),
           donor_status: 'pending_verification',
           is_available: true,
         });

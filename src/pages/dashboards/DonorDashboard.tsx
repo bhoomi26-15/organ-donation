@@ -46,7 +46,7 @@ export function DonorDashboard() {
         setDonor(donorData);
 
         // Load matches
-        const matchesData = await matchService.getMatches({ donor_id: donorData.id });
+        const matchesData = await matchService.getMatchesForDonor(donorData.id);
         setMatches(matchesData || []);
 
         // Load recent notifications
@@ -148,7 +148,7 @@ export function DonorDashboard() {
               <p className="text-sm text-slate-400 mb-2">Available Organs</p>
               <div className="flex flex-wrap gap-2">
                 {donor.organ_types?.map((organ: string) => (
-                  <Badge key={organ} variant="primary">{organ}</Badge>
+                  <Badge key={organ} variant="danger">{organ}</Badge>
                 ))}
               </div>
             </div>
@@ -264,7 +264,7 @@ export function DonorDashboard() {
             <CardContent className="p-4">
               <p className="text-slate-400 text-sm">Availability</p>
               <span className="inline-block mt-2">
-                <Badge variant={donor.is_available ? 'success' : 'secondary'}>
+                <Badge variant={donor.is_available ? 'success' : 'default'}>
                   {donor.is_available ? 'Available' : 'Unavailable'}
                 </Badge>
               </span>

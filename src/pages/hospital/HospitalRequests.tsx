@@ -54,7 +54,7 @@ export function HospitalRequests() {
         const matches = await findDonorsForRequest(reqId);
         // Create proposals for top 3 matches
         for (const match of matches.slice(0, 3)) {
-          await createMatchProposal(match, user!.id);
+          await createMatchProposal(match);
         }
         alert(`Request approved. System found ${matches.length} potential matches and proposed the top ${Math.min(3, matches.length)} matches automatically.`);
       }

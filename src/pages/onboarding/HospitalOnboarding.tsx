@@ -17,7 +17,7 @@ export function HospitalOnboarding() {
   const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState({
-    hospital_name: profile?.hospital_name || '',
+    hospital_name: profile?.full_name || '',
     hospital_email: profile?.email || '',
     phone: profile?.phone || '',
     city: profile?.city || '',
@@ -56,13 +56,13 @@ export function HospitalOnboarding() {
       if (existingHospital) {
         await hospitalService.updateHospital(existingHospital.id, {
           ...formData,
-          verification_status: 'pending',
+          hospital_status: 'pending',
         });
       } else {
         await hospitalService.createHospital({
           user_id: user.id,
           ...formData,
-          verification_status: 'pending',
+          hospital_status: 'pending',
         });
       }
 

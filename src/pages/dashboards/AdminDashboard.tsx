@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Loader } from '../../components/ui/Loader';
-import { Users, Hospital, FileText, CheckCircle2, Link, LogBook, AlertCircle } from 'lucide-react';
+import { Users, Hospital, FileText, CheckCircle2, Link, AlertCircle } from 'lucide-react';
 
 export function AdminDashboard() {
   const { user } = useAuth();
@@ -110,7 +110,7 @@ export function AdminDashboard() {
             onClick={() => navigate('/admin/audit-logs')}
             className="flex items-center gap-2"
           >
-            <LogBook className="h-4 w-4" />
+            <FileText className="h-4 w-4" />
             View Audit Logs
           </Button>
         </div>
@@ -306,7 +306,7 @@ export function AdminDashboard() {
         <Card className="border-red-600/50">
           <CardHeader>
             <CardTitle className="text-red-400 flex items-center gap-2">
-              <LogBook className="h-5 w-5" />
+              <FileText className="h-5 w-5" />
               Recent Activity (Audit Logs)
             </CardTitle>
             <CardDescription>Latest system events and actions</CardDescription>

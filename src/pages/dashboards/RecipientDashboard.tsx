@@ -109,7 +109,7 @@ export function RecipientDashboard() {
             <CardContent className="p-4">
               <p className="text-slate-400 text-sm">Status</p>
               <Badge 
-                variant={recipient.recipient_status === 'approved' ? 'success' : recipient.recipient_status === 'pending_approval' ? 'warning' : 'secondary'}
+                variant={recipient.status === 'approved' ? 'success' : recipient.status === 'pending' ? 'warning' : 'default'}
                 className="mt-2"
               >
                 {recipient.recipient_status?.replace(/_/g, ' ').toUpperCase()}

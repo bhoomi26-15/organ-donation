@@ -163,10 +163,3 @@ export function Login() {
     </div>
   );
 }
-            Sign up
-          </Link>
-        </CardFooter>
-      </Card>
-    </div>
-  );
-}
