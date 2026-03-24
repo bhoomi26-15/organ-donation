@@ -1,176 +1,324 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase';
-import { DashboardLayout } from '../../components/layout/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import { recipientService } from '../../services/recipientService';
+import { requestService } from '../../services/requestService';
+import { matchService } from '../../services/matchService';
+import { notificationService } from '../../services/notificationService';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Activity, Search, AlertTriangle, FileText } from 'lucide-react';
+import { Loader } from '../../components/ui/Loader';
+import { Heart, Stethoscope, Search, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 
 export function RecipientDashboard() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [recipient, setRecipient] = useState<any>(null);
   const [activeRequest, setActiveRequest] = useState<any>(null);
-  const [matchesCount, setMatchesCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [matches, setMatches] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    async function loadData() {
-      if (!user) return;
-      
-      const { data: recData } = await supabase.from('recipients').select('*').eq('user_id', user.id).single();
-      
-      if (recData) {
-        setRecipient(recData);
-        
-        const { data: reqData } = await supabase
-          .from('requests')
-          .select('*')
-          .eq('recipient_id', recData.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-          
-        if (reqData) {
-          setActiveRequest(reqData);
-          
-          const { count } = await supabase
-            .from('matches')
-            .select('*', { count: 'exact', head: true })
-            .eq('request_id', reqData.id);
-            
-          setMatchesCount(count || 0);
-        }
-      }
-      setLoading(false);
+    if (!user?.id) {
+      navigate('/auth/login');
+      return;
     }
-    loadData();
-  }, [user]);
 
-  if (loading) return <DashboardLayout><div className="flex justify-center py-12"><div className="animate-spin h-8 w-8 border-b-2 border-primary-600 rounded-full"></div></div></DashboardLayout>;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+
+        // Load recipient profile
+        const recipientData = await recipientService.getRecipientByUserId(user.id);
+        if (!recipientData) {
+          setError('Recipient profile not found');
+          return;
+        }
+        setRecipient(recipientData);
+
+        // Load active request
+        const requests = await requestService.getRequestsByRecipient(recipientData.id);
+        if (requests && requests.length > 0) {
+          const active = requests.find((r: any) => r.status !== 'rejected') || requests[0];
+          setActiveRequest(active);
+
+          // Load matches for active request
+          const matchesData = await matchService.getMatches({ request_id: active.id });
+          setMatches(matchesData || []);
+        }
+
+        // Load notifications
+        const notificationsData = await notificationService.getNotifications(user.id);
+        setNotifications(notificationsData.slice(0, 5) || []);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user?.id, navigate]);
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (error || !recipient) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 p-4">
+        <div className="max-w-4xl mx-auto">
+          <Card className="border-red-600/50">
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <p className="text-red-300 mb-4">{error || 'Recipient profile not found'}</p>
+              <Button onClick={() => navigate('/')}>Go Home</Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  const getUrgencyColor = (urgency: string) => {
+    switch (urgency) {
+      case 'critical':
+        return 'danger';
+      case 'high':
+        return 'warning';
+      default:
+        return 'default';
+    }
+  };
 
   return (
-    <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Patient Dashboard</h1>
-        <p className="text-slate-500">Track your organ requests and matches.</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 p-4">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-red-400 mb-2">Recipient Dashboard</h1>
+          <p className="text-slate-400">Track your organ request and matches - {recipient.full_name}</p>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardContent className="p-6 flex items-center">
-             <div className="bg-primary-50 p-3 rounded-full mr-4 text-primary-600 border border-primary-100">
-               <Activity className="h-6 w-6" />
-             </div>
-             <div>
-               <p className="text-sm font-medium text-slate-500">Current Status</p>
-               <h3 className="text-xl font-bold capitalize mt-1">{recipient?.status || 'No Profile'}</h3>
-             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6 flex items-center">
-             <div className="bg-rose-50 p-3 rounded-full mr-4 text-rose-600 border border-rose-100">
-               <AlertTriangle className="h-6 w-6" />
-             </div>
-             <div>
-               <p className="text-sm font-medium text-slate-500">Active Request</p>
-               <h3 className="text-xl font-bold mt-1">
-                 {activeRequest ? activeRequest.required_organ : 'None'}
-               </h3>
-             </div>
-          </CardContent>
-        </Card>
+        {/* Stats Grid */}
+        <div className="grid md:grid-cols-3 gap-4">
+          <Card className="border-red-600/50">
+            <CardContent className="p-4">
+              <p className="text-slate-400 text-sm">Status</p>
+              <Badge 
+                variant={recipient.recipient_status === 'approved' ? 'success' : recipient.recipient_status === 'pending_approval' ? 'warning' : 'secondary'}
+                className="mt-2"
+              >
+                {recipient.recipient_status?.replace(/_/g, ' ').toUpperCase()}
+              </Badge>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center">
-             <div className="bg-green-50 p-3 rounded-full mr-4 text-green-600 border border-green-100">
-               <Search className="h-6 w-6" />
-             </div>
-             <div>
-               <p className="text-sm font-medium text-slate-500">Potential Matches</p>
-               <h3 className="text-xl font-bold mt-1">{matchesCount}</h3>
-             </div>
-          </CardContent>
-        </Card>
-      </div>
+          <Card className="border-red-600/50">
+            <CardContent className="p-4">
+              <p className="text-slate-400 text-sm">Active Request</p>
+              <p className="text-3xl font-bold text-red-400 mt-2">
+                {activeRequest ? activeRequest.required_organ : 'None'}
+              </p>
+            </CardContent>
+          </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+          <Card className="border-red-600/50">
+            <CardContent className="p-4">
+              <p className="text-slate-400 text-sm">Potential Matches</p>
+              <p className="text-3xl font-bold text-red-400 mt-2">{matches.length}</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Profile & Request Summary */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Profile Card */}
+          <Card className="border-red-600/50">
+            <CardHeader>
+              <CardTitle className="text-red-400">Profile Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <p className="text-sm text-slate-400">Full Name</p>
+                <p className="text-red-300 font-medium">{recipient.full_name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-400">Age / Blood Group</p>
+                <p className="text-red-300 font-medium">{recipient.age} years / {recipient.blood_group}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-400">Location</p>
+                <p className="text-red-300 font-medium">{recipient.city}, {recipient.state}</p>
+              </div>
+              <Button 
+                variant="secondary" 
+                className="w-full mt-4"
+                onClick={() => navigate('/recipient/profile')}
+              >
+                Edit Profile
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Active Request Card */}
+          <Card className="border-red-600/50">
+            <CardHeader>
+              <CardTitle className="text-red-400 flex items-center gap-2">
+                <Stethoscope className="h-5 w-5" />
+                Active Request
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {activeRequest ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Organ Required:</span>
+                    <span className="text-red-300 font-medium">{activeRequest.required_organ}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Urgency:</span>
+                    <Badge variant={getUrgencyColor(activeRequest.urgency_level)}>
+                      {activeRequest.urgency_level?.toUpperCase()}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Status:</span>
+                    <Badge variant={activeRequest.status === 'approved' ? 'success' : 'warning'}>
+                      {activeRequest.status?.toUpperCase()}
+                    </Badge>
+                  </div>
+                  <div className="pt-3 border-t border-slate-700">
+                    <p className="text-sm text-slate-300 mb-2">Medical Condition:</p>
+                    <p className="text-xs text-slate-400 line-clamp-2">{activeRequest.medical_notes}</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-slate-400 text-center py-4">No active request</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Matches & Notifications */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Matches Card */}
+          <Card className="border-red-600/50">
+            <CardHeader>
+              <CardTitle className="text-red-400 flex items-center gap-2">
+                <Heart className="h-5 w-5" />
+                Potential Matches ({matches.length})
+              </CardTitle>
+              <CardDescription>Recipients found for your organ need</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {matches.length === 0 ? (
+                <p className="text-slate-400 text-center py-4">No matches found yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {matches.slice(0, 3).map((match: any) => (
+                    <div key={match.id} className="p-3 bg-slate-900/50 rounded border border-slate-700">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium text-red-300">Match ID: {match.id.slice(0, 8)}</p>
+                          <p className="text-xs text-slate-400 mt-1">Status: {match.status}</p>
+                        </div>
+                        <Badge variant={match.match_score >= 80 ? 'success' : 'warning'}>
+                          {Math.round(match.match_score)}%
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                  {matches.length > 3 && (
+                    <Button 
+                      variant="secondary" 
+                      className="w-full mt-2"
+                      onClick={() => navigate('/recipient/matches')}
+                    >
+                      View All {matches.length} Matches
+                    </Button>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Notifications Card */}
+          <Card className="border-red-600/50">
+            <CardHeader>
+              <CardTitle className="text-red-400">Recent Notifications</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {notifications.length === 0 ? (
+                <p className="text-slate-400 text-center py-4">No notifications</p>
+              ) : (
+                <div className="space-y-2">
+                  {notifications.map(notif => (
+                    <div key={notif.id} className="p-3 bg-slate-900/50 rounded border border-slate-700">
+                      <p className="text-sm font-medium text-red-300">{notif.title}</p>
+                      <p className="text-xs text-slate-400 mt-1">{notif.message}</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {new Date(notif.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                  <Button 
+                    variant="secondary" 
+                    className="w-full mt-2"
+                    onClick={() => navigate('/notifications')}
+                  >
+                    View All
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Status Steps */}
+        <Card className="border-red-600/50">
           <CardHeader>
-            <CardTitle>Request Summary</CardTitle>
+            <CardTitle className="text-red-400">Your Journey</CardTitle>
+            <CardDescription>Steps toward finding your donor match</CardDescription>
           </CardHeader>
           <CardContent>
-            {activeRequest ? (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                  <span className="text-slate-500 font-medium">Organ Required:</span>
-                  <span className="font-bold text-slate-900">{activeRequest.required_organ}</span>
-                </div>
-                <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                  <span className="text-slate-500 font-medium">Blood Compatibility:</span>
-                  <Badge variant="danger">{activeRequest.blood_group}</Badge>
-                </div>
-                <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                  <span className="text-slate-500 font-medium">Urgency Level:</span>
-                  <Badge variant={activeRequest.urgency_level === 'critical' ? 'danger' : 'warning'} className="capitalize">
-                    {activeRequest.urgency_level}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                  <span className="text-slate-500 font-medium">Request Status:</span>
-                  <Badge variant={activeRequest.status === 'approved' ? 'success' : 'default'} className="capitalize">
-                    {activeRequest.status}
-                  </Badge>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-red-300 font-medium">Profile Completed</p>
+                  <p className="text-sm text-slate-400">Your information has been securely stored</p>
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <FileText className="mx-auto h-12 w-12 text-slate-300 mb-3" />
-                <p className="text-slate-500">You don't have any active requests.</p>
+              <div className="flex items-start gap-3">
+                <div className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${recipient.recipient_status === 'approved' ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}>
+                  ✓
+                </div>
+                <div>
+                  <p className="text-red-300 font-medium">Medical Approval</p>
+                  <p className="text-sm text-slate-400">
+                    {recipient.recipient_status === 'approved' ? 'Your medical profile has been reviewed' : 'Awaiting hospital medical review'}
+                  </p>
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Next Steps</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ol className="relative border-l border-slate-200 ml-3 space-y-6">
-              <li className="mb-2 ml-6">
-                <span className="absolute flex items-center justify-center w-6 h-6 bg-primary-100 rounded-full -left-3 ring-4 ring-white">
-                  1
-                </span>
-                <h3 className="font-medium leading-tight pt-1">Profile Creation</h3>
-                <p className="text-sm text-slate-500">Completed basic onboarding.</p>
-              </li>
-              <li className="mb-2 ml-6">
-                <span className={`absolute flex items-center justify-center w-6 h-6 rounded-full -left-3 ring-4 ring-white ${activeRequest ? 'bg-primary-100 text-primary-600' : 'bg-slate-100 text-slate-500'}`}>
-                  2
-                </span>
-                <h3 className="font-medium leading-tight pt-1">Medical Review</h3>
-                <p className="text-sm text-slate-500">{activeRequest?.status === 'approved' ? 'Your request is clinically approved.' : 'Awaiting hospital clinical review.'}</p>
-              </li>
-              <li className="mb-2 ml-6">
-                <span className={`absolute flex items-center justify-center w-6 h-6 rounded-full -left-3 ring-4 ring-white ${matchesCount > 0 ? 'bg-primary-100 text-primary-600' : 'bg-slate-100 text-slate-500'}`}>
-                  3
-                </span>
-                <h3 className="font-medium leading-tight pt-1">Matching Algorithm</h3>
-                <p className="text-sm text-slate-500">{matchesCount > 0 ? `Found ${matchesCount} potential donor matches.` : 'System is continuously scanning for donors.'}</p>
-              </li>
-              <li className="ml-6">
-                <span className="absolute flex items-center justify-center w-6 h-6 bg-slate-100 rounded-full -left-3 ring-4 ring-white text-slate-500">
-                  4
-                </span>
-                <h3 className="font-medium leading-tight pt-1">Transplant Confirmation</h3>
-                <p className="text-sm text-slate-500">Awaiting hospital finalization of a match.</p>
-              </li>
-            </ol>
+              <div className="flex items-start gap-3">
+                <div className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${matches.length > 0 ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}>
+                  {matches.length}
+                </div>
+                <div>
+                  <p className="text-red-300 font-medium">Matching Algorithm</p>
+                  <p className="text-sm text-slate-400">
+                    {matches.length > 0 ? `Found ${matches.length} potential donor matches` : 'System is scanning for compatible donors'}
+                  </p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

@@ -31,52 +31,112 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, user?: User) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
-        
+
       if (error) {
-        console.error('Error fetching profile:', error);
+        // Create profile stub if not created yet (common for OAuth first login)
+        if (error.code === 'PGRST116' || error.message?.includes('No row')) {
+          const full_name = user?.user_metadata?.full_name || user?.email || null;
+          const email = user?.email || null;
+          const role = (user?.user_metadata as any)?.role || null;
+
+          const { data: upserted, error: upsertError } = await supabase
+            .from('profiles')
+            .upsert(
+              {
+                id: userId,
+                full_name,
+                email,
+                role,
+                profile_completed: false,
+              },
+              { onConflict: 'id' }
+            )
+            .select()
+            .single();
+
+          if (upsertError) {
+            console.error('Error upserting profile:', upsertError);
+            setProfile(null);
+          } else {
+            setProfile(upserted as Profile);
+          }
+        } else {
+          console.error('Error fetching profile:', error);
+          setProfile(null);
+        }
       } else {
         setProfile(data);
       }
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
+      setProfile(null);
     }
   };
 
   const refreshProfile = async () => {
     if (user) {
-      await fetchProfile(user.id);
+      await fetchProfile(user.id, user);
     }
   };
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    // Check and handle OAuth callback
+    const handleOAuthCallback = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error getting session:', error);
+      }
+
+      // Try to get hash for OAuth redirect handling
+      const hash = window.location.hash;
+      if (hash.includes('access_token')) {
+        // Session will be restored automatically by Supabase SDK
+        setTimeout(() => {
+          window.location.hash = '';
+        }, 100);
+      }
+
+      return data?.session;
+    };
+
+    const initializeAuth = async () => {
+      // Get initial session (either existing or restored from OAuth callback)
+      const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+      
       if (error) {
         console.error('Error getting initial session:', error);
       }
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
+
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
+
+      if (initialSession?.user) {
+        await fetchProfile(initialSession.user.id, initialSession.user);
       }
+
+      setLoading(false);
+    };
+
+    // Try to handle OAuth callback first
+    handleOAuthCallback().then(() => {
+      initializeAuth();
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+
         if (session?.user) {
-          fetchProfile(session.user.id);
+          await fetchProfile(session.user.id, session.user);
         } else {
           setProfile(null);
         }
@@ -90,6 +150,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     await supabase.auth.signOut();
+
+    // Force local state cleanup
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   };
 
   return (

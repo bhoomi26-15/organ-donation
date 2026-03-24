@@ -15,11 +15,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
     const variants = {
-      primary: 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm',
-      secondary: 'bg-secondary-600 text-white hover:bg-secondary-700 shadow-sm',
-      outline: 'border border-slate-300 bg-transparent hover:bg-slate-50 text-slate-700',
-      ghost: 'bg-transparent hover:bg-slate-100 text-slate-700',
-      danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm',
+      primary: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 disabled:bg-slate-700 disabled:text-slate-400 shadow-md hover:shadow-lg',
+      secondary: 'bg-slate-700 text-white hover:bg-slate-600 active:bg-slate-800 disabled:bg-slate-900 disabled:text-slate-400 shadow-md hover:shadow-lg',
+      outline: 'border-2 border-red-600 bg-transparent text-red-400 hover:bg-red-600/10 active:bg-red-600/20 disabled:border-slate-600 disabled:text-slate-400',
+      ghost: 'bg-transparent text-slate-300 hover:bg-slate-800 hover:text-red-400 active:bg-slate-700 disabled:text-slate-600',
+      danger: 'bg-red-700 text-white hover:bg-red-800 active:bg-red-900 disabled:bg-slate-700 disabled:text-slate-400 shadow-md hover:shadow-lg',
     };
 
     const sizes = {
@@ -33,7 +33,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:pointer-events-none disabled:opacity-50',
+          'inline-flex items-center justify-center rounded-md font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:pointer-events-none disabled:opacity-60',
           variants[variant],
           sizes[size],
           className

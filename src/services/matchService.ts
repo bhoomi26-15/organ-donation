@@ -1,5 +1,9 @@
 import { supabase } from '../lib/supabase';
-import { auditLog } from './auditService';
+import { auditLog, auditService } from './auditService';
+import { Database } from '../types/database.types';
+
+type Match = Database['public']['Tables']['matches']['Row'];
+type MatchInsert = Database['public']['Tables']['matches']['Insert'];
 
 /**
  * Blood Group Compatibility Logic
@@ -70,72 +74,192 @@ export const calculateMatchScore = (donor: any, request: any, recipient: any): n
   return score;
 };
 
-export const findDonorsForRequest = async (requestId: string) => {
-  // Fetch Request and Recipient
-  const { data: request } = await supabase.from('requests').select('*, recipients(*)').eq('id', requestId).single();
-  if (!request) throw new Error("Request not found");
+export const matchService = {
+  /**
+   * Find donor matches for a request
+   */
+  async findDonorsForRequest(requestId: string) {
+    // Fetch Request and Recipient
+    const { data: request, error: requestError } = await supabase
+      .from('requests')
+      .select('*, recipients(*)')
+      .eq('id', requestId)
+      .single();
 
-  const recipient = request.recipients;
+    if (requestError || !request) throw new Error('Request not found');
 
-  // Fetch Eligible Donors
-  // Rules: verified, available, organ type matches
-  const { data: donors } = await supabase
-    .from('donors')
-    .select('*')
-    .eq('donor_status', 'verified')
-    .eq('is_available', true)
-    .contains('organ_types', [request.required_organ]);
+    const recipient = (request as any).recipients;
 
-  if (!donors) return [];
+    // Fetch Eligible Donors - verified, available, organ type matches
+    const { data: donors, error: donorError } = await supabase
+      .from('donors')
+      .select('*')
+      .eq('donor_status', 'verified')
+      .eq('is_available', true)
+      .contains('organ_types', [request.required_organ]);
 
-  // Calculate Scores and Build Matches Details
-  const evaluatedMatches = donors.map(donor => {
-    const isOrganMatch = true; // since filtered via contains
-    const isBloodMatch = checkBloodCompatibility(donor.blood_group, request.blood_group);
-    
-    // Only return compatible blood types
-    if (!isBloodMatch) return null;
+    if (donorError || !donors) return [];
 
-    const cityMatch = donor.city.toLowerCase() === recipient.city.toLowerCase();
-    const stateMatch = donor.state.toLowerCase() === recipient.state.toLowerCase();
-    
-    let urgencyBoost = 0;
-    if (request.urgency_level === 'critical') urgencyBoost = 15;
-    if (request.urgency_level === 'high') urgencyBoost = 10;
+    // Calculate Scores and Build Matches Details
+    const evaluatedMatches = donors
+      .map(donor => {
+        const isOrganMatch = true;
+        const isBloodMatch = checkBloodCompatibility(donor.blood_group, request.blood_group);
+        
+        if (!isBloodMatch) return null;
 
-    const match_score = calculateMatchScore(donor, request, recipient);
+        const cityMatch = donor.city.toLowerCase() === recipient.city.toLowerCase();
+        const stateMatch = donor.state.toLowerCase() === recipient.state.toLowerCase();
+        
+        let urgencyBoost = 0;
+        if (request.urgency_level === 'critical') urgencyBoost = 15;
+        if (request.urgency_level === 'high') urgencyBoost = 10;
 
-    return {
-      donor_id: donor.id,
-      recipient_id: recipient.id,
-      request_id: request.id,
-      hospital_id: donor.hospital_id,
-      match_score,
-      organ_match: isOrganMatch,
-      blood_group_match: isBloodMatch,
-      city_match: cityMatch,
-      state_match: stateMatch,
-      urgency_boost: urgencyBoost,
-      status: 'pending'
-    };
-  }).filter(Boolean); // Remove nulls (incompatible)
+        const match_score = calculateMatchScore(donor, request, recipient);
 
-  // Sort descending by score
-  return evaluatedMatches.sort((a: any, b: any) => b.match_score - a.match_score);
+        return {
+          donor_id: donor.id,
+          recipient_id: recipient.id,
+          request_id: request.id,
+          hospital_id: donor.hospital_id,
+          match_score,
+          organ_match: isOrganMatch,
+          blood_group_match: isBloodMatch,
+          city_match: cityMatch,
+          state_match: stateMatch,
+          urgency_boost: urgencyBoost,
+          status: 'pending'
+        };
+      })
+      .filter(Boolean);
+
+    return evaluatedMatches.sort((a: any, b: any) => b.match_score - a.match_score);
+  },
+
+  /**
+   * Create match record
+   */
+  async createMatch(matchData: MatchInsert) {
+    const { data, error } = await supabase
+      .from('matches')
+      .insert(matchData)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    await auditService.log(
+      'MATCH_CREATED',
+      `Match created with score ${matchData.match_score}`,
+      data.id,
+      'matches'
+    );
+
+    return data;
+  },
+
+  /**
+   * Get matches for a recipient
+   */
+  async getMatchesForRecipient(recipientId: string) {
+    const { data, error } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('recipient_id', recipientId)
+      .order('match_score', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  /**
+   * Get matches for a donor
+   */
+  async getMatchesForDonor(donorId: string) {
+    const { data, error } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('donor_id', donorId)
+      .order('match_score', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  /**
+   * Get all matches
+   */
+  async getMatches(filters?: { status?: string; request_id?: string }) {
+    let query = supabase.from('matches').select('*');
+
+    if (filters?.status) {
+      query = query.eq('status', filters.status);
+    }
+    if (filters?.request_id) {
+      query = query.eq('request_id', filters.request_id);
+    }
+
+    const { data, error } = await query.order('match_score', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  /**
+   * Confirm match
+   */
+  async confirmMatch(matchId: string, confirmedBy: string) {
+    const { data, error } = await supabase
+      .from('matches')
+      .update({
+        status: 'confirmed',
+        confirmed_by: confirmedBy,
+        confirmed_at: new Date().toISOString(),
+      })
+      .eq('id', matchId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    await auditService.log(
+      'MATCH_CONFIRMED',
+      `Match confirmed by ${confirmedBy}`,
+      matchId,
+      'matches'
+    );
+
+    return data;
+  },
+
+  /**
+   * Reject match
+   */
+  async rejectMatch(matchId: string) {
+    const { data, error } = await supabase
+      .from('matches')
+      .update({ status: 'rejected' })
+      .eq('id', matchId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    await auditService.log(
+      'MATCH_REJECTED',
+      `Match rejected`,
+      matchId,
+      'matches'
+    );
+
+    return data;
+  },
 };
 
-export const createMatchProposal = async (matchData: any, actorUid: string) => {
-  const { data, error } = await supabase.from('matches').insert(matchData).select().single();
-  if (error) throw error;
+// Legacy exports for backward compatibility
+export const findDonorsForRequest = async (requestId: string) => {
+  return matchService.findDonorsForRequest(requestId);
+};
 
-  await auditLog(
-    actorUid,
-    'system',
-    'MATCH_PROPOSED',
-    data.id,
-    'matches',
-    `Proposed match created with score ${data.match_score}`
-  );
-
-  return data;
+export const createMatchProposal = async (matchData: any) => {
+  return matchService.createMatch(matchData);
 };

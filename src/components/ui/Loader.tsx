@@ -16,7 +16,7 @@ export function Loader({ className, size = 'md' }: LoaderProps) {
   return (
     <div className={cn("flex justify-center items-center", className)}>
       <div className={cn(
-        "animate-spin rounded-full border-t-primary-600 border-slate-200",
+        "animate-spin rounded-full border-t-red-600 border-slate-700",
         sizes[size]
       )} />
     </div>
@@ -25,7 +25,7 @@ export function Loader({ className, size = 'md' }: LoaderProps) {
 
 export function FullPageLoader() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center bg-slate-950">
       <Loader size="lg" />
     </div>
   );

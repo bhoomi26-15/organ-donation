@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Heart } from 'lucide-react';
+import { Heart, Mail, Lock } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/Card';
@@ -14,50 +14,90 @@ export function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const redirectBasedOnRole = (role: string | null | undefined, profileCompleted: boolean | null | undefined) => {
+    if (!role) return '/role-selection';
+    if (!profileCompleted) return `/onboarding/${role}`;
+    if (role === 'donor') return '/donor/dashboard';
+    if (role === 'recipient') return '/recipient/dashboard';
+    if (role === 'hospital') return '/hospital/dashboard';
+    if (role === 'admin') return '/admin/dashboard';
+    return '/';
+  };
+
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      setError(error.message);
+      if (signInError) throw signInError;
+
+      // Fetch profile to determine redirect
+      const { data: { user } } = await supabase.auth.getUser();
+      let role: string | null = null;
+      let profileCompleted: boolean | null = null;
+
+      if (user?.id) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role, profile_completed')
+          .eq('id', user.id)
+          .single();
+
+        if (profileData) {
+          role = profileData.role;
+          profileCompleted = profileData.profile_completed;
+        }
+      }
+
+      const from = (location.state as any)?.from?.pathname;
+      if (from && from !== '/login' && from !== '/signup') {
+        navigate(from, { replace: true });
+      } else {
+        const target = redirectBasedOnRole(role, profileCompleted);
+        navigate(target, { replace: true });
+      }
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
       setLoading(false);
-    } else {
-      // Nav handled by App.tsx protected routes reacting to auth state or redirect manually
-      const from = (location.state as any)?.from?.pathname || '/';
-      navigate(from === '/' || from === '/login' ? '/donor/dashboard' : from, { replace: true });
-      // We will let the ProtectedRoute redirect if role is not set
     }
   };
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      }
-    });
-    if (error) setError(error.message);
+    try {
+      setError('');
+      const redirectBase = window.location.origin;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${redirectBase}/role-selection`,
+        }
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || 'Google sign-in failed. Please try again.');
+    }
   };
 
   return (
     <div className="min-h-screen auth-bg flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl border-white/50 bg-white/80 backdrop-blur-sm">
-        <CardHeader className="space-y-1 items-center pb-4">
-          <div className="bg-primary-50 p-3 rounded-full mb-3">
-            <Heart className="h-6 w-6 text-primary-600" />
+      <Card className="w-full max-w-md shadow-2xl border-red-600/50">
+        <CardHeader className="space-y-1 items-center pb-4 border-b border-red-600/30">
+          <div className="bg-red-600/20 p-3 rounded-full mb-3">
+            <Heart className="h-6 w-6 text-red-500" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">Welcome back</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
+          <CardTitle className="text-2xl font-bold text-red-400">Welcome Back</CardTitle>
+          <CardDescription>Sign in to LifeLink</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md border border-red-100">
+            <div className="p-3 text-sm text-red-300 bg-red-900/30 rounded-md border border-red-700/50">
               {error}
             </div>
           )}
@@ -71,11 +111,11 @@ export function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-700">Password</label>
-                <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700 hover:underline">
-                  Forgot password?
+                <label className="text-sm font-medium text-slate-300">Password</label>
+                <Link to="/forgot-password" className="text-sm text-red-400 hover:text-red-300 hover:underline">
+                  Forgot?
                 </Link>
               </div>
               <Input
@@ -87,23 +127,23 @@ export function Login() {
               />
             </div>
             <Button className="w-full" type="submit" isLoading={loading}>
-              Log in
+              Sign In
             </Button>
           </form>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200" />
+              <span className="w-full border-t border-slate-700" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-500">Or continue with</span>
+              <span className="bg-slate-900 px-2 text-slate-400">Or continue with</span>
             </div>
           </div>
 
           <Button 
             variant="outline" 
             type="button" 
-            className="w-full bg-white" 
+            className="w-full" 
             onClick={handleGoogleLogin}
             disabled={loading}
           >
@@ -113,9 +153,16 @@ export function Login() {
             Google
           </Button>
         </CardContent>
-        <CardFooter className="flex flex-wrap items-center justify-center gap-2 border-t border-slate-100 pt-6 text-sm text-slate-600">
+        <CardFooter className="flex flex-wrap items-center justify-center gap-2 border-t border-slate-800 pt-6 text-sm text-slate-400">
           Don't have an account? 
-          <Link to="/signup" className="text-primary-600 hover:text-primary-700 font-medium hover:underline">
+          <Link to="/signup" className="text-red-400 hover:text-red-300 font-semibold hover:underline">
+            Sign up
+          </Link>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
             Sign up
           </Link>
         </CardFooter>

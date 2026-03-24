@@ -1,9 +1,26 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Activity, ShieldCheck, Users } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function Landing() {
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) return;
+
+    if (profile?.role) {
+      if (profile.role === 'donor') return navigate('/donor/dashboard');
+      if (profile.role === 'recipient') return navigate('/recipient/dashboard');
+      if (profile.role === 'hospital') return navigate('/hospital/dashboard');
+      if (profile.role === 'admin') return navigate('/admin/dashboard');
+    }
+
+    return navigate('/role-selection');
+  }, [user, profile, navigate]);
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="px-6 lg:px-14 h-20 flex items-center shadow-sm bg-white shrink-0">
