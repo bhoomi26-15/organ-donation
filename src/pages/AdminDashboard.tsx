@@ -81,101 +81,103 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-white shadow sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+      <header className="bg-white shadow-md sticky top-0 z-40 border-b-4 border-blue-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">LifeLink</h1>
+            <p className="text-sm text-gray-600">Admin Control Panel</p>
+          </div>
           <button
             onClick={handleLogout}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition duration-200 shadow-md"
           >
             Logout
           </button>
         </div>
       </header>
 
-      {/* Error */}
+      {/* Error Alert */}
       {error && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-          {error}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+          <div className="p-4 bg-red-50 border-l-4 border-red-600 text-red-700 rounded-lg shadow">
+            <p className="font-semibold">Error</p>
+            <p className="text-sm mt-1">{error}</p>
+          </div>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
+      {/* Navigation Tabs */}
+      <div className="bg-white border-b border-gray-200 sticky top-20 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-8">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`px-4 py-4 font-medium border-b-2 transition ${
-                activeTab === 'overview'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => setActiveTab('donors')}
-              className={`px-4 py-4 font-medium border-b-2 transition ${
-                activeTab === 'donors'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Donors ({donors.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('needers')}
-              className={`px-4 py-4 font-medium border-b-2 transition ${
-                activeTab === 'needers'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Seekers ({needers.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('matching')}
-              className={`px-4 py-4 font-medium border-b-2 transition ${
-                activeTab === 'matching'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Matching
-            </button>
+          <div className="flex gap-8 overflow-x-auto">
+            {['overview', 'donors', 'needers', 'matching'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className={`px-4 py-4 font-semibold border-b-4 transition duration-200 whitespace-nowrap ${
+                  activeTab === tab
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }`}
+              >
+                {tab === 'overview' && 'Overview'}
+                {tab === 'donors' && `Donors (${donors.length})`}
+                {tab === 'needers' && `Seekers (${needers.length})`}
+                {tab === 'matching' && 'Matching'}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Executive Summary</h2>
-            <div className="grid md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-white rounded-lg shadow p-6">
-                <p className="text-gray-600 text-sm font-medium mb-1">Total Donors</p>
-                <p className="text-3xl font-bold text-blue-600">{donors.length}</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">Executive Summary</h2>
+            <div className="grid md:grid-cols-4 gap-6 mb-8">
+              <div className="bg-white rounded-lg shadow-lg p-8 border-t-4 border-blue-600 hover:shadow-xl transition">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium mb-2">Total Donors</p>
+                    <p className="text-4xl font-bold text-blue-600">{donors.length}</p>
+                  </div>
+                  <div className="text-5xl text-blue-100">♥</div>
+                </div>
               </div>
-              <div className="bg-white rounded-lg shadow p-6">
-                <p className="text-gray-600 text-sm font-medium mb-1">Total Seekers</p>
-                <p className="text-3xl font-bold text-green-600">{needers.length}</p>
+              <div className="bg-white rounded-lg shadow-lg p-8 border-t-4 border-green-600 hover:shadow-xl transition">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium mb-2">Total Seekers</p>
+                    <p className="text-4xl font-bold text-green-600">{needers.length}</p>
+                  </div>
+                  <div className="text-5xl text-green-100">👥</div>
+                </div>
               </div>
-              <div className="bg-white rounded-lg shadow p-6">
-                <p className="text-gray-600 text-sm font-medium mb-1">Matched</p>
-                <p className="text-3xl font-bold text-purple-600">
-                  {needers.filter((n) => n.needer_status === 'matched').length}
-                </p>
+              <div className="bg-white rounded-lg shadow-lg p-8 border-t-4 border-purple-600 hover:shadow-xl transition">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium mb-2">Matched</p>
+                    <p className="text-4xl font-bold text-purple-600">
+                      {needers.filter((n) => n.needer_status === 'matched').length}
+                    </p>
+                  </div>
+                  <div className="text-5xl text-purple-100">✓</div>
+                </div>
               </div>
-              <div className="bg-white rounded-lg shadow p-6">
-                <p className="text-gray-600 text-sm font-medium mb-1">Waiting</p>
-                <p className="text-3xl font-bold text-orange-600">
-                  {needers.filter((n) => n.needer_status === 'waiting').length}
-                </p>
+              <div className="bg-white rounded-lg shadow-lg p-8 border-t-4 border-orange-600 hover:shadow-xl transition">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium mb-2">Waiting</p>
+                    <p className="text-4xl font-bold text-orange-600">
+                      {needers.filter((n) => n.needer_status === 'waiting').length}
+                    </p>
+                  </div>
+                  <div className="text-5xl text-orange-100">⏳</div>
+                </div>
               </div>
             </div>
           </div>
@@ -185,44 +187,44 @@ const AdminDashboard: React.FC = () => {
         {activeTab === 'donors' && (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Registered Donors</h2>
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-gradient-to-r from-blue-600 to-blue-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Organ</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Blood</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">City</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">Name</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">Organ</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">Blood</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">City</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">Status</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">Email</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {donors.map((donor) => (
-                      <tr key={donor.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm text-gray-900 font-medium">{donor.full_name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{donor.organ_type}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{donor.blood_group}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{donor.city}</td>
+                    {donors.map((donor, idx) => (
+                      <tr key={donor.id} className={`hover:bg-blue-50 transition ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                        <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{donor.full_name}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{donor.organ_type}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{donor.blood_group}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{donor.city}</td>
                         <td className="px-6 py-4 text-sm">
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                             donor.donor_status === 'available'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-gray-100 text-gray-800'
                           }`}>
-                            {donor.donor_status}
+                            {donor.donor_status.toUpperCase()}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{donor.email}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{donor.email}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
               {donors.length === 0 && (
-                <div className="text-center py-8 text-gray-600">
-                  No donors registered yet.
+                <div className="text-center py-12 text-gray-500">
+                  <p className="text-lg font-medium">No donors registered yet</p>
                 </div>
               )}
             </div>
@@ -233,43 +235,45 @@ const AdminDashboard: React.FC = () => {
         {activeTab === 'needers' && (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Registered Seekers</h2>
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-gradient-to-r from-green-600 to-green-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Organ</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Blood</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Urgency</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Action</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">Name</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">Organ</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">Blood</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">Urgency</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">Status</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {needers.map((needer) => (
-                      <tr key={needer.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm text-gray-900 font-medium">{needer.full_name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{needer.needed_organ}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{needer.blood_group}</td>
+                    {needers.map((needer, idx) => (
+                      <tr key={needer.id} className={`hover:bg-green-50 transition ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                        <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{needer.full_name}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{needer.needed_organ}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{needer.blood_group}</td>
                         <td className="px-6 py-4 text-sm">
-                          <span className={`text-xs font-semibold ${
+                          <span className={`px-2 py-1 rounded font-bold text-xs ${
                             needer.urgency_level === 'critical'
-                              ? 'text-red-600'
+                              ? 'bg-red-100 text-red-800'
                               : needer.urgency_level === 'high'
-                              ? 'text-orange-600'
-                              : 'text-gray-600'
+                              ? 'bg-orange-100 text-orange-800'
+                              : needer.urgency_level === 'medium'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-gray-100 text-gray-800'
                           }`}>
                             {needer.urgency_level.toUpperCase()}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm">
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                             needer.needer_status === 'matched'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-yellow-100 text-yellow-800'
                           }`}>
-                            {needer.needer_status}
+                            {needer.needer_status.toUpperCase()}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm">
@@ -279,7 +283,7 @@ const AdminDashboard: React.FC = () => {
                               setShowMatchingModal(true);
                             }}
                             disabled={needer.needer_status === 'matched'}
-                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 text-xs font-medium"
+                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 text-xs font-bold transition"
                           >
                             Match
                           </button>
@@ -290,8 +294,8 @@ const AdminDashboard: React.FC = () => {
                 </table>
               </div>
               {needers.length === 0 && (
-                <div className="text-center py-8 text-gray-600">
-                  No seekers registered yet.
+                <div className="text-center py-12 text-gray-500">
+                  <p className="text-lg font-medium">No seekers registered yet</p>
                 </div>
               )}
             </div>
@@ -306,50 +310,56 @@ const AdminDashboard: React.FC = () => {
               {needers.filter((n) => n.needer_status === 'waiting').map((needer) => {
                 const compatibleDonors = getCompatibleDonors(needer);
                 return (
-                  <div key={needer.id} className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-400">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{needer.full_name}</h3>
-                    <p className="text-gray-600 mb-4">
-                      Needs: <strong>{needer.needed_organ}</strong> | Blood: <strong>{needer.blood_group}</strong> | 
-                      City: <strong>{needer.city}</strong> | Urgency: <strong className="text-red-600">{needer.urgency_level.toUpperCase()}</strong>
-                    </p>
+                  <div key={needer.id} className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-yellow-500 hover:shadow-xl transition">
+                    <div className="mb-4">
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">{needer.full_name}</h3>
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-700">
+                        <span><strong>Organ:</strong> {needer.needed_organ}</span>
+                        <span><strong>Blood:</strong> {needer.blood_group}</span>
+                        <span><strong>City:</strong> {needer.city}</span>
+                        <span><strong>Urgency:</strong> <span className="text-red-600 font-bold">{needer.urgency_level.toUpperCase()}</span></span>
+                      </div>
+                    </div>
                     
                     {compatibleDonors.length > 0 ? (
-                      <div className="space-y-2">
-                        <p className="text-sm font-medium text-gray-700 mb-3">
-                          Found {compatibleDonors.length} compatible donor{compatibleDonors.length !== 1 ? 's' : ''}:
+                      <div>
+                        <p className="text-sm font-bold text-blue-600 mb-4">
+                          ✓ Found {compatibleDonors.length} compatible donor{compatibleDonors.length !== 1 ? 's' : ''}
                         </p>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           {compatibleDonors.map((donor) => (
                             <div
                               key={donor.id}
-                              className="flex justify-between items-center p-3 bg-gray-50 rounded border border-gray-200"
+                              className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200 hover:border-blue-400 transition"
                             >
                               <div>
-                                <p className="font-medium text-gray-900">{donor.full_name}</p>
+                                <p className="font-bold text-gray-900">{donor.full_name}</p>
                                 <p className="text-sm text-gray-600">
-                                  {donor.city}, {donor.state} | Email: {donor.email}
+                                  {donor.city}, {donor.state} | {donor.email}
                                 </p>
                               </div>
                               <button
                                 onClick={() => handleMatchDonor(needer, donor)}
-                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium text-sm"
+                                className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold text-sm transition"
                               >
-                                Confirm Match
+                                Match
                               </button>
                             </div>
                           ))}
                         </div>
                       </div>
                     ) : (
-                      <p className="text-gray-600 italic">No compatible donors found at this time.</p>
+                      <p className="text-gray-600 italic bg-gray-50 p-3 rounded">
+                        ✗ No compatible donors found at this time
+                      </p>
                     )}
                   </div>
                 );
               })}
               
               {needers.filter((n) => n.needer_status === 'waiting').length === 0 && (
-                <div className="text-center py-12 text-gray-600">
-                  No waiting seekers to match at this time.
+                <div className="text-center py-16 text-gray-500">
+                  <p className="text-lg font-medium">No waiting seekers at this time</p>
                 </div>
               )}
             </div>
@@ -357,13 +367,13 @@ const AdminDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Matching Modal */}
+      {/* Modal */}
       {showMatchingModal && selectedNeeder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Match Donor</h2>
-            <p className="text-gray-600 mb-4">
-              Select a donor for <strong>{selectedNeeder.full_name}</strong>
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 transform transition">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Match Donor</h2>
+            <p className="text-gray-600 mb-6">
+              Select a compatible donor for <strong className="text-blue-600">{selectedNeeder.full_name}</strong>
             </p>
             
             <div className="space-y-2 mb-6 max-h-64 overflow-y-auto">
@@ -371,9 +381,9 @@ const AdminDashboard: React.FC = () => {
                 <button
                   key={donor.id}
                   onClick={() => handleMatchDonor(selectedNeeder, donor)}
-                  className="w-full text-left p-3 border border-gray-300 rounded hover:bg-blue-50 transition"
+                  className="w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition font-medium"
                 >
-                  <p className="font-medium text-gray-900">{donor.full_name}</p>
+                  <p className="text-gray-900 font-bold">{donor.full_name}</p>
                   <p className="text-sm text-gray-600">{donor.city}, {donor.state}</p>
                 </button>
               ))}
@@ -384,7 +394,7 @@ const AdminDashboard: React.FC = () => {
                 setShowMatchingModal(false);
                 setSelectedNeeder(null);
               }}
-              className="w-full px-4 py-2 border border-gray-300 text-gray-900 rounded hover:bg-gray-50 font-medium"
+              className="w-full px-4 py-3 border-2 border-gray-300 text-gray-900 rounded-lg hover:bg-gray-100 font-bold transition"
             >
               Cancel
             </button>
