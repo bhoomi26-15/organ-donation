@@ -83,15 +83,15 @@ const AdminDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-md sticky top-0 z-40 border-b-4 border-blue-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex justify-between items-center">
+      <header className="bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">LifeLink</h1>
-            <p className="text-sm text-gray-600">Admin Control Panel</p>
+            <h1 className="text-4xl font-bold text-white">LifeLink</h1>
+            <p className="text-blue-100 mt-1 font-medium">Admin Control Center</p>
           </div>
           <button
             onClick={handleLogout}
-            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition duration-200 shadow-md"
+            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold transition duration-200 shadow-md active:scale-95"
           >
             Logout
           </button>
@@ -101,9 +101,8 @@ const AdminDashboard: React.FC = () => {
       {/* Error Alert */}
       {error && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          <div className="p-4 bg-red-50 border-l-4 border-red-600 text-red-700 rounded-lg shadow">
-            <p className="font-semibold">Error</p>
-            <p className="text-sm mt-1">{error}</p>
+          <div className="p-4 bg-red-50 border-l-4 border-red-600 text-red-700 rounded-lg shadow font-medium">
+            {error}
           </div>
         </div>
       )}

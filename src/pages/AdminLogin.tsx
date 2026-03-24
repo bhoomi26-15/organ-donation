@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { adminService } from '../services/hospitalService';
+import { adminService } from '../services/adminService';
 import { supabase } from '../lib/supabase';
 
 const AdminLogin: React.FC = () => {
@@ -17,13 +17,12 @@ const AdminLogin: React.FC = () => {
 
     try {
       const isAdmin = await adminService.validateAdminLogin(email);
-      
+
       if (isAdmin) {
-        // Store admin email in sessionStorage for this session
         sessionStorage.setItem('adminEmail', email);
         navigate('/admin/dashboard');
       } else {
-        setError('Email not found in admin list. Please check and try again.');
+        setError('Invalid credentials. Please contact your administrator.');
       }
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.');
@@ -54,19 +53,16 @@ const AdminLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <Link to="/" className="text-2xl font-bold text-blue-600 text-center block mb-8">
-            LifeLink Admin
-          </Link>
-
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Portal</h1>
-          <p className="text-gray-600 mb-8">Login to access the admin dashboard</p>
+        <div className="bg-white rounded-xl shadow-2xl p-8 border-t-4 border-blue-600">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 text-center">LifeLink</h1>
+            <p className="text-center text-gray-600 mt-2 font-medium">Admin Portal</p>
+          </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-600 text-red-700 rounded-lg text-sm font-medium">
               {error}
             </div>
           )}
@@ -76,7 +72,7 @@ const AdminLogin: React.FC = () => {
             type="button"
             onClick={handleGoogleLogin}
             disabled={googleLoading}
-            className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition disabled:bg-gray-100 disabled:cursor-not-allowed mb-6 flex items-center justify-center gap-2"
+            className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition disabled:bg-gray-100 disabled:cursor-not-allowed mb-6 flex items-center justify-center gap-2 active:scale-95 duration-150"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -105,49 +101,39 @@ const AdminLogin: React.FC = () => {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+              <span className="px-2 bg-white text-gray-500 font-medium">Or sign in with email</span>
             </div>
           </div>
 
           {/* Email Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Admin Email *
-              </label>
+              <label className="block text-sm font-bold text-gray-900 mb-2">Email Address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your admin email"
+                placeholder="admin@example.com"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-medium"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Your email must be registered in the admin database.
-              </p>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed active:scale-95 duration-150"
             >
-              {loading ? 'Verifying...' : 'Login to Dashboard'}
+              {loading ? 'Verifying...' : 'Sign In'}
             </button>
           </form>
 
           <div className="mt-8 pt-8 border-t border-gray-200 text-center">
-            <p className="text-gray-600 mb-4">Are you a donor or seeker?</p>
-            <Link to="/" className="text-blue-600 hover:text-blue-700 font-medium">
+            <p className="text-gray-600 mb-4 font-medium">Not an admin?</p>
+            <Link to="/" className="text-blue-600 hover:text-blue-700 font-bold text-sm">
               Back to Home
             </Link>
           </div>
-        </div>
-
-        {/* Note */}
-        <div className="mt-8 text-center text-gray-600 text-sm">
-          <p>For testing, use any registered admin email from the admin database.</p>
         </div>
       </div>
     </div>
