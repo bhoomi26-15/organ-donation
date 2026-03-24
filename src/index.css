@@ -4,71 +4,33 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 antialiased;
+    @apply bg-white text-gray-900 antialiased;
   }
 
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   input, textarea, select {
-    @apply bg-slate-900 text-slate-100 border-slate-700;
+    @apply bg-white text-gray-900 border-gray-300;
   }
 
   input:focus, textarea:focus, select:focus {
-    @apply border-red-600 ring-red-600;
+    @apply border-blue-600 ring-blue-600;
   }
 }
 
 @layer components {
-  .auth-bg {
-    @apply bg-gradient-to-br from-slate-950 via-slate-900 to-red-950;
+  .card {
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm;
   }
 
-  .card-dark {
-    @apply bg-slate-900 border border-slate-800 rounded-lg shadow-lg;
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 transition-colors;
   }
 
-  .btn-gradient {
-    @apply bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800;
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 transition-colors;
   }
-
-  .heading-gradient {
-    @apply bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent;
-  }
-}
-
-.auth-container {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(127, 29, 29, 0.6) 100%);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-
-.dashboard-card {
-  @apply bg-slate-900 border border-slate-800 rounded-lg p-6 shadow-md hover:shadow-lg hover:border-red-600/50 transition-all;
-}
-
-.input-dark {
-  @apply bg-slate-900 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:border-red-600 focus:ring-red-600;
-}
-
-.button-primary {
-  @apply bg-red-600 text-white hover:bg-red-700 active:bg-red-800 disabled:bg-slate-700 disabled:text-slate-500 transition-colors;
-}
-
-.badge-red {
-  @apply bg-red-600/20 text-red-200 border border-red-600/50;
-}
-
-.badge-green {
-  @apply bg-green-600/20 text-green-200 border border-green-600/50;
-}
-
-.badge-yellow {
-  @apply bg-yellow-600/20 text-yellow-200 border border-yellow-600/50;
-}
-
-.text-gradient {
-  @apply animate-pulse;
 }
 

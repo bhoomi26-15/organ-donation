@@ -1,152 +1,81 @@
 import { supabase } from '../lib/supabase';
 import { Database } from '../types/database.types';
-import { auditService, auditLog } from './auditService';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
 type DonorInsert = Database['public']['Tables']['donors']['Insert'];
-type DonorUpdate = Database['public']['Tables']['donors']['Update'];
 
 export const donorService = {
-  /**
-   * Get donor profile by user ID
-   */
-  async getDonorByUserId(userId: string): Promise<Donor | null> {
+  async createDonor(donor: DonorInsert) {
     const { data, error } = await supabase
       .from('donors')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      throw error;
-    }
-    return data || null;
-  },
-
-  /**
-   * Get donor profile by ID
-   */
-  async getDonor(donorId: string): Promise<Donor | null> {
-    const { data, error } = await supabase
-      .from('donors')
-      .select('*')
-      .eq('id', donorId)
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  /**
-   * Create donor profile
-   */
-  async createDonor(donorData: DonorInsert) {
-    const { data, error } = await supabase
-      .from('donors')
-      .insert(donorData)
+      .insert(donor as any)
       .select()
       .single();
 
     if (error) throw error;
-
-    await auditService.log('CREATE_DONOR', `Donor profile created: ${donorData.full_name}`, data.id, 'donors');
-
-    return data;
+    return data as Donor;
   },
 
-  /**
-   * Update donor profile
-   */
-  async updateDonor(donorId: string, updates: DonorUpdate) {
+  async getDonors() {
     const { data, error } = await supabase
       .from('donors')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []) as Donor[];
+  },
+
+  async getDonor(id: string) {
+    const { data, error } = await supabase
+      .from('donors')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data as Donor;
+  },
+
+  async updateDonor(id: string, updates: any) {
+    const { data, error } = await (supabase.from('donors') as any)
       .update(updates)
-      .eq('id', donorId)
+      .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
-
-    await auditService.log('UPDATE_DONOR', 'Donor profile updated', donorId, 'donors');
-
-    return data;
+    return data as Donor;
   },
 
-  /**
-   * Get all donors
-   */
-  async getDonors(filters?: { hospital_id?: string; donor_status?: string; is_available?: boolean }) {
-    let query = supabase.from('donors').select('*');
-
-    if (filters?.hospital_id) {
-      query = query.eq('hospital_id', filters.hospital_id);
-    }
-    if (filters?.donor_status) {
-      query = query.eq('donor_status', filters.donor_status);
-    }
-    if (filters?.is_available !== undefined) {
-      query = query.eq('is_available', filters.is_available);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-  },
-
-  /**
-   * Get verified and available donors
-   */
-  async getEligibleDonors(organType?: string) {
-    let query = supabase
+  async getDonorsByOrgan(organType: string) {
+    const { data, error } = await supabase
       .from('donors')
       .select('*')
-      .eq('donor_status', 'verified')
-      .eq('is_available', true);
+      .eq('organ_type', organType)
+      .eq('donor_status', 'available');
 
-    if (organType) {
-      query = query.contains('organ_types', [organType]);
-    }
-
-    const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data || []) as Donor[];
   },
 
-  /**
-   * Verify donor
-   */
-  async verifyDonor(donorId: string) {
+  async getDonorsByBloodGroup(bloodGroup: string) {
     const { data, error } = await supabase
       .from('donors')
-      .update({ donor_status: 'verified' })
-      .eq('id', donorId)
-      .select()
-      .single();
+      .select('*')
+      .eq('blood_group', bloodGroup);
 
     if (error) throw error;
-
-    await auditLog({
-      actionType: 'VERIFY_DONOR',
-      targetId: donorId,
-      targetTable: 'donors',
-      description: `Donor verified`,
-    });
-
-    return data;
+    return (data || []) as Donor[];
   },
 
-  /**
-   * Set donor availability
-   */
-  async setDonorAvailability(donorId: string, isAvailable: boolean) {
+  async getDonorsByCity(city: string) {
     const { data, error } = await supabase
       .from('donors')
-      .update({ is_available: isAvailable })
-      .eq('id', donorId)
-      .select()
-      .single();
+      .select('*')
+      .eq('city', city);
 
     if (error) throw error;
-    return data;
+    return (data || []) as Donor[];
   },
 };

@@ -1,151 +1,86 @@
 import { supabase } from '../lib/supabase';
 import { Database } from '../types/database.types';
-import { auditService, auditLog } from './auditService';
 
-type Recipient = Database['public']['Tables']['recipients']['Row'];
-type RecipientInsert = Database['public']['Tables']['recipients']['Insert'];
-type RecipientUpdate = Database['public']['Tables']['recipients']['Update'];
+type Needer = Database['public']['Tables']['needers']['Row'];
+type NeederInsert = Database['public']['Tables']['needers']['Insert'];
 
-export const recipientService = {
-  /**
-   * Get recipient profile by user ID
-   */
-  async getRecipientByUserId(userId: string): Promise<Recipient | null> {
+export const neederService = {
+  async createNeeder(needer: NeederInsert) {
     const { data, error } = await supabase
-      .from('recipients')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      throw error;
-    }
-    return data || null;
-  },
-
-  /**
-   * Get recipient by ID
-   */
-  async getRecipient(recipientId: string): Promise<Recipient | null> {
-    const { data, error } = await supabase
-      .from('recipients')
-      .select('*')
-      .eq('id', recipientId)
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  /**
-   * Create recipient profile
-   */
-  async createRecipient(recipientData: RecipientInsert) {
-    const { data, error } = await supabase
-      .from('recipients')
-      .insert(recipientData)
+      .from('needers')
+      .insert(needer as any)
       .select()
       .single();
 
     if (error) throw error;
-
-    await auditService.log('CREATE_RECIPIENT', `Recipient profile created: ${recipientData.full_name}`, data.id, 'recipients');
-
-    return data;
+    return data as Needer;
   },
 
-  /**
-   * Update recipient profile
-   */
-  async updateRecipient(recipientId: string, updates: RecipientUpdate) {
+  async getNeeders() {
     const { data, error } = await supabase
-      .from('recipients')
+      .from('needers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []) as Needer[];
+  },
+
+  async getNeeder(id: string) {
+    const { data, error } = await supabase
+      .from('needers')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data as Needer;
+  },
+
+  async updateNeeder(id: string, updates: any) {
+    const { data, error } = await (supabase.from('needers') as any)
       .update(updates)
-      .eq('id', recipientId)
+      .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
-
-    await auditService.log('UPDATE_RECIPIENT', 'Recipient profile updated', recipientId, 'recipients');
-
-    return data;
+    return data as Needer;
   },
 
-  /**
-   * Get all recipients
-   */
-  async getRecipients(filters?: { hospital_id?: string; status?: string }) {
-    let query = supabase.from('recipients').select('*');
-
-    if (filters?.hospital_id) {
-      query = query.eq('hospital_id', filters.hospital_id);
-    }
-    if (filters?.status) {
-      query = query.eq('status', filters.status);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-  },
-
-  /**
-   * Get recipients needing approval
-   */
-  async getPendingRecipients() {
+  async getNeedersForOrgan(organ: string) {
     const { data, error } = await supabase
-      .from('recipients')
+      .from('needers')
       .select('*')
-      .eq('status', 'pending');
+      .eq('needed_organ', organ)
+      .eq('needer_status', 'waiting');
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as Needer[];
   },
 
-  /**
-   * Approve recipient
-   */
-  async approveRecipient(recipientId: string) {
+  async getNeedersForBloodGroup(bloodGroup: string) {
     const { data, error } = await supabase
-      .from('recipients')
-      .update({ status: 'approved' })
-      .eq('id', recipientId)
+      .from('needers')
+      .select('*')
+      .eq('blood_group', bloodGroup);
+
+    if (error) throw error;
+    return (data || []) as Needer[];
+  },
+
+  async assignDonorToNeeder(neederId: string, donorId: string) {
+    const { data, error } = await (supabase.from('needers') as any)
+      .update({
+        matched_donor_id: donorId,
+        needer_status: 'matched',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', neederId)
       .select()
       .single();
 
     if (error) throw error;
-
-    await auditLog({
-      actionType: 'APPROVE_RECIPIENT',
-      targetId: recipientId,
-      targetTable: 'recipients',
-      description: `Recipient approved`,
-    });
-
-    return data;
-  },
-
-  /**
-   * Reject recipient
-   */
-  async rejectRecipient(recipientId: string) {
-    const { data, error } = await supabase
-      .from('recipients')
-      .update({ status: 'rejected' })
-      .eq('id', recipientId)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    await auditLog({
-      actionType: 'REJECT_RECIPIENT',
-      targetId: recipientId,
-      targetTable: 'recipients',
-      description: `Recipient rejected`,
-    });
-
-    return data;
+    return data as Needer;
   },
 };

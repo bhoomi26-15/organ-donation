@@ -1,161 +1,57 @@
 import { supabase } from '../lib/supabase';
 import { Database } from '../types/database.types';
-import { auditService, auditLog } from './auditService';
 
-type Hospital = Database['public']['Tables']['hospitals']['Row'];
-type HospitalInsert = Database['public']['Tables']['hospitals']['Insert'];
-type HospitalUpdate = Database['public']['Tables']['hospitals']['Update'];
+type Admin = Database['public']['Tables']['admins']['Row'];
+type AdminInsert = Database['public']['Tables']['admins']['Insert'];
 
-export const hospitalService = {
-  /**
-   * Get hospital profile by user ID
-   */
-  async getHospitalByUserId(userId: string): Promise<Hospital | null> {
+export const adminService = {
+  async getAllAdmins() {
     const { data, error } = await supabase
-      .from('hospitals')
+      .from('admins')
       .select('*')
-      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []) as Admin[];
+  },
+
+  async getAdminByEmail(email: string) {
+    const { data, error } = await supabase
+      .from('admins')
+      .select('*')
+      .eq('email', email)
       .single();
 
     if (error && error.code !== 'PGRST116') {
       throw error;
     }
-    return data || null;
+    return data as Admin | null;
   },
 
-  /**
-   * Get hospital by ID
-   */
-  async getHospital(hospitalId: string): Promise<Hospital | null> {
+  async getAdmin(id: string) {
     const { data, error } = await supabase
-      .from('hospitals')
+      .from('admins')
       .select('*')
-      .eq('id', hospitalId)
+      .eq('id', id)
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Admin;
   },
 
-  /**
-   * Create hospital profile
-   */
-  async createHospital(hospitalData: HospitalInsert) {
+  async createAdmin(admin: AdminInsert) {
     const { data, error } = await supabase
-      .from('hospitals')
-      .insert(hospitalData)
+      .from('admins')
+      .insert(admin as any)
       .select()
       .single();
 
     if (error) throw error;
-
-    await auditService.log('CREATE_HOSPITAL', `Hospital profile created: ${hospitalData.hospital_name}`, data.id, 'hospitals');
-
-    return data;
+    return data as Admin;
   },
 
-  /**
-   * Update hospital profile
-   */
-  async updateHospital(hospitalId: string, updates: HospitalUpdate) {
-    const { data, error } = await supabase
-      .from('hospitals')
-      .update(updates)
-      .eq('id', hospitalId)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    await auditService.log('UPDATE_HOSPITAL', 'Hospital profile updated', hospitalId, 'hospitals');
-
-    return data;
-  },
-
-  /**
-   * Get all hospitals
-   */
-  async getHospitals(status?: string) {
-    let query = supabase.from('hospitals').select('*');
-
-    if (status) {
-      query = query.eq('hospital_status', status);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-  },
-
-  /**
-   * Get verified hospitals
-   */
-  async getVerifiedHospitals() {
-    const { data, error } = await supabase
-      .from('hospitals')
-      .select('*')
-      .eq('hospital_status', 'verified');
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  /**
-   * Get pending hospitals for verification
-   */
-  async getPendingHospitals() {
-    const { data, error } = await supabase
-      .from('hospitals')
-      .select('*')
-      .eq('hospital_status', 'pending');
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  /**
-   * Verify hospital
-   */
-  async verifyHospital(hospitalId: string) {
-    const { data, error } = await supabase
-      .from('hospitals')
-      .update({ hospital_status: 'verified' })
-      .eq('id', hospitalId)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    await auditLog({
-      actionType: 'VERIFY_HOSPITAL',
-      targetId: hospitalId,
-      targetTable: 'hospitals',
-      description: `Hospital verified`,
-    });
-
-    return data;
-  },
-
-  /**
-   * Reject hospital
-   */
-  async rejectHospital(hospitalId: string) {
-    const { data, error } = await supabase
-      .from('hospitals')
-      .update({ hospital_status: 'rejected' })
-      .eq('id', hospitalId)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    await auditLog({
-      actionType: 'REJECT_HOSPITAL',
-      targetId: hospitalId,
-      targetTable: 'hospitals',
-      description: `Hospital rejected`,
-    });
-
-    return data;
+  async validateAdminLogin(email: string) {
+    const admin = await this.getAdminByEmail(email);
+    return admin !== null;
   },
 };
