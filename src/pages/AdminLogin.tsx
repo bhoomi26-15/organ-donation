@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminService } from '../services/adminService';
 import { supabase } from '../lib/supabase';
@@ -9,6 +9,39 @@ const AdminLogin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Check for OAuth callback and session
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          return;
+        }
+
+        if (session && session.user) {
+          // Verify this user is an admin
+          const userEmail = session.user.email;
+          if (userEmail) {
+            const isValid = await adminService.validateAdminLogin(userEmail);
+            if (isValid) {
+              // Store admin session and navigate within the app
+              sessionStorage.setItem('adminEmail', userEmail);
+              navigate('/admin/dashboard', { replace: true });
+            } else {
+              setError('Your email is not registered as an admin');
+              await supabase.auth.signOut();
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Auth check error:', err);
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +58,7 @@ const AdminLogin: React.FC = () => {
 
       // Store admin session
       sessionStorage.setItem('adminEmail', email);
-      navigate('/admin/dashboard');
+      navigate('/admin/dashboard', { replace: true });
     } catch (err) {
       setError('An error occurred. Please try again.');
       setLoading(false);
@@ -34,16 +67,18 @@ const AdminLogin: React.FC = () => {
 
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
+    setError('');
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/admin/dashboard`,
+          skipBrowserRedirect: true,
         },
       });
       if (error) throw error;
+      // After OAuth, check session in the useEffect above
     } catch (err) {
-      setError('Google sign-in failed');
+      setError('Google sign-in failed. Please try again.');
       setGoogleLoading(false);
     }
   };
