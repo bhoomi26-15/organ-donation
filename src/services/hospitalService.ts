@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Database } from '../types/database.types';
-import { auditLog } from './auditService';
+import { auditService, auditLog } from './auditService';
 
 type Hospital = Database['public']['Tables']['hospitals']['Row'];
 type HospitalInsert = Database['public']['Tables']['hospitals']['Insert'];
@@ -49,12 +49,7 @@ export const hospitalService = {
 
     if (error) throw error;
 
-    await auditLog({
-      actionType: 'CREATE_HOSPITAL',
-      targetId: data.id,
-      targetTable: 'hospitals',
-      description: `Hospital profile created: ${hospitalData.hospital_name}`,
-    });
+    await auditService.log('CREATE_HOSPITAL', `Hospital profile created: ${hospitalData.hospital_name}`, data.id, 'hospitals');
 
     return data;
   },
@@ -72,12 +67,7 @@ export const hospitalService = {
 
     if (error) throw error;
 
-    await auditLog({
-      actionType: 'UPDATE_HOSPITAL',
-      targetId: hospitalId,
-      targetTable: 'hospitals',
-      description: `Hospital profile updated`,
-    });
+    await auditService.log('UPDATE_HOSPITAL', 'Hospital profile updated', hospitalId, 'hospitals');
 
     return data;
   },

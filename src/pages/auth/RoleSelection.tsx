@@ -26,7 +26,8 @@ export function RoleSelection() {
     try {
       const fullName = user.user_metadata?.full_name || user.email || 'User';
 
-      const { error } = await supabase
+      // Step 1: Upsert profile with role
+      const { data: upsertedProfile, error } = await supabase
         .from('profiles')
         .upsert(
           { id: user.id, role, full_name: fullName, profile_completed: false },
@@ -37,10 +38,12 @@ export function RoleSelection() {
 
       if (error) throw error;
 
+      // Step 2: Update auth metadata
       await supabase.auth.updateUser({
         data: { role }
       });
 
+      // Step 3: Log the role selection
       await auditService.log(
         'ROLE_SELECTION',
         `User selected role: ${role}`,
@@ -50,12 +53,14 @@ export function RoleSelection() {
         role
       );
 
+      // Step 4: Refresh profile to ensure AuthContext is updated
       await refreshProfile();
+
+      // Step 5: Navigate to onboarding
       navigate(`/onboarding/${role}`);
     } catch (err: any) {
       console.error('Error updating role:', err);
       alert('Failed to save role selection. Please try again.');
-    } finally {
       setLoading(false);
     }
   };

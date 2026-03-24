@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Database } from '../types/database.types';
-import { auditLog } from './auditService';
+import { auditService, auditLog } from './auditService';
 
 type Recipient = Database['public']['Tables']['recipients']['Row'];
 type RecipientInsert = Database['public']['Tables']['recipients']['Insert'];
@@ -49,12 +49,7 @@ export const recipientService = {
 
     if (error) throw error;
 
-    await auditLog({
-      actionType: 'CREATE_RECIPIENT',
-      targetId: data.id,
-      targetTable: 'recipients',
-      description: `Recipient profile created: ${recipientData.full_name}`,
-    });
+    await auditService.log('CREATE_RECIPIENT', `Recipient profile created: ${recipientData.full_name}`, data.id, 'recipients');
 
     return data;
   },
@@ -72,12 +67,7 @@ export const recipientService = {
 
     if (error) throw error;
 
-    await auditLog({
-      actionType: 'UPDATE_RECIPIENT',
-      targetId: recipientId,
-      targetTable: 'recipients',
-      description: `Recipient profile updated`,
-    });
+    await auditService.log('UPDATE_RECIPIENT', 'Recipient profile updated', recipientId, 'recipients');
 
     return data;
   },

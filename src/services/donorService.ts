@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Database } from '../types/database.types';
-import { auditLog } from './auditService';
+import { auditService, auditLog } from './auditService';
 
 type Donor = Database['public']['Tables']['donors']['Row'];
 type DonorInsert = Database['public']['Tables']['donors']['Insert'];
@@ -49,12 +49,7 @@ export const donorService = {
 
     if (error) throw error;
 
-    await auditLog({
-      actionType: 'CREATE_DONOR',
-      targetId: data.id,
-      targetTable: 'donors',
-      description: `Donor profile created: ${donorData.full_name}`,
-    });
+    await auditService.log('CREATE_DONOR', `Donor profile created: ${donorData.full_name}`, data.id, 'donors');
 
     return data;
   },
@@ -72,12 +67,7 @@ export const donorService = {
 
     if (error) throw error;
 
-    await auditLog({
-      actionType: 'UPDATE_DONOR',
-      targetId: donorId,
-      targetTable: 'donors',
-      description: `Donor profile updated`,
-    });
+    await auditService.log('UPDATE_DONOR', 'Donor profile updated', donorId, 'donors');
 
     return data;
   },

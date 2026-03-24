@@ -1,78 +1,162 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Heart, Mail, Phone, MapPin } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Heart, ArrowLeft, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 
 export function Contact() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    // Simulate form submission
+    setTimeout(() => {
+      setLoading(false);
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ name: '', email: '', message: '' });
+      }, 3000);
+    }, 1000);
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
-      <header className="px-6 lg:px-14 h-20 flex items-center shadow-sm bg-white shrink-0">
-        <Link to="/" className="flex items-center justify-center">
-          <Heart className="h-8 w-8 text-rose-500 mr-2" />
-          <span className="font-bold text-2xl tracking-tight text-slate-900">LifeLink</span>
-        </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
-          <Link to="/" className="text-sm font-medium hover:text-primary-600">Home</Link>
-          <Link to="/about" className="text-sm font-medium hover:text-primary-600">About</Link>
-        </nav>
-      </header>
-
-      <main className="flex-1 py-16">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-slate-900 mb-4">Contact Us</h1>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">Have questions? We're here to help you understand the donation system, platform integration, or anything else.</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950">
+      {/* Navigation */}
+      <nav className="sticky top-0 z-50 border-b border-slate-700/50 bg-slate-950/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-slate-400 hover:text-red-400 transition-colors font-medium"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            Back
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-red-600/20">
+              <Heart className="h-6 w-6 text-red-500" />
+            </div>
+            <span className="text-xl font-bold text-transparent bg-gradient-to-r from-red-400 to-red-600 bg-clip-text">
+              LifeLink
+            </span>
           </div>
+        </div>
+      </nav>
 
-          <div className="grid md:grid-cols-2 gap-12 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-8 md:p-12 bg-primary-900 text-white">
-              <h2 className="text-2xl font-bold mb-6">Get in Touch</h2>
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <Mail className="mt-1 mr-4 h-6 w-6 text-primary-300" />
-                  <div>
-                    <p className="font-medium">Email Support</p>
-                    <p className="text-primary-200 mt-1">support@lifelink.org</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <Phone className="mt-1 mr-4 h-6 w-6 text-primary-300" />
-                  <div>
-                    <p className="font-medium">Direct Line</p>
-                    <p className="text-primary-200 mt-1">1-800-LIFELINK</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <MapPin className="mt-1 mr-4 h-6 w-6 text-primary-300" />
-                  <div>
-                    <p className="font-medium">Office Location</p>
-                    <p className="text-primary-200 mt-1">123 Healthway Drive<br/>Medical District<br/>NY 10001</p>
-                  </div>
+      {/* Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <h1 className="text-5xl font-bold text-transparent bg-gradient-to-r from-red-400 to-red-600 bg-clip-text mb-12 text-center">
+          Contact Us
+        </h1>
+
+        <div className="grid md:grid-cols-2 gap-12">
+          {/* Contact Info */}
+          <div className="space-y-8">
+            <div className="p-6 rounded-lg border border-red-600/30 bg-red-600/5">
+              <div className="flex items-start gap-4">
+                <Mail className="h-6 w-6 text-red-400 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-semibold text-red-400 mb-1">Email</h3>
+                  <p className="text-slate-400">support@lifelink.org</p>
                 </div>
               </div>
             </div>
-            
-            <div className="p-8 md:p-12">
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                <div className="grid grid-cols-2 gap-4">
-                  <Input label="First Name" placeholder="John" />
-                  <Input label="Last Name" placeholder="Doe" />
+
+            <div className="p-6 rounded-lg border border-red-600/30 bg-red-600/5">
+              <div className="flex items-start gap-4">
+                <Phone className="h-6 w-6 text-red-400 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-semibold text-red-400 mb-1">Phone</h3>
+                  <p className="text-slate-400">+1 (555) 123-4567</p>
                 </div>
-                <Input label="Email Address" type="email" placeholder="john@example.com" />
-                <div className="w-full">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Message</label>
-                  <textarea 
-                    className="flex w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[120px]"
-                    placeholder="How can we help you?"
-                  ></textarea>
-                </div>
-                <Button type="button" className="w-full" size="lg">Send Message</Button>
-              </form>
+              </div>
             </div>
+
+            <div className="p-6 rounded-lg border border-red-600/30 bg-red-600/5">
+              <div className="flex items-start gap-4">
+                <MapPin className="h-6 w-6 text-red-400 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-semibold text-red-400 mb-1">Address</h3>
+                  <p className="text-slate-400">123 Medical Plaza<br />Healthcare City, HC 12345</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-lg border border-red-600/30 bg-red-600/5">
+              <h3 className="font-semibold text-red-400 mb-4">Business Hours</h3>
+              <p className="text-slate-400 space-y-1">
+                <span className="block">Monday - Friday: 9:00 AM - 6:00 PM</span>
+                <span className="block">Saturday: 10:00 AM - 4:00 PM</span>
+                <span className="block">Sunday: Emergency Support Only</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Contact Form */}
+          <div className="p-8 rounded-lg border border-red-600/30 bg-red-600/5">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-red-400 font-medium mb-2">Name</label>
+                <Input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  placeholder="Your name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-red-400 font-medium mb-2">Email</label>
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-red-400 font-medium mb-2">Message</label>
+                <textarea
+                  value={formData.message}
+                  onChange={(e) => setFormData({...formData, message: e.target.value})}
+                  placeholder="Your message here..."
+                  rows={5}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-slate-300 placeholder-slate-500 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20 transition-colors"
+                  required
+                />
+              </div>
+
+              {submitted && (
+                <div className="p-4 bg-green-900/30 border border-green-600/30 rounded-lg text-green-300">
+                  Thank you! We'll get back to you soon.
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Sending...' : 'Send Message'}
+              </Button>
+            </form>
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-700/50 bg-slate-950/80 backdrop-blur-sm py-8 mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-slate-500 text-sm">&copy; 2026 LifeLink Organ Donation Platform. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }
